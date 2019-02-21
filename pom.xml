@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <packaging>pom</packaging>
+    <modules>
+        <module>svm-extension</module>
+        <module>svm-example</module>
+    </modules>
+    <groupId>io.helidon.examples</groupId>
+    <artifactId>helidon-graal-project</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+
+    <name>Helidon Substrate VM</name>
+    <properties>
+        <version.helidon>1.0.0</version.helidon>
+        <version.graal>1.0.0-rc12</version.graal>
+
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>${maven.compiler.source}</maven.compiler.target>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.helidon</groupId>
+                <artifactId>helidon-bom</artifactId>
+                <version>${version.helidon}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.graalvm.sdk</groupId>
+                <artifactId>graal-sdk</artifactId>
+                <version>${version.graal}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.oracle.substratevm</groupId>
+                <artifactId>svm</artifactId>
+                <version>${version.graal}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+</project>
