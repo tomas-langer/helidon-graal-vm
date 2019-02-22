@@ -30,20 +30,15 @@ NATIVE_IMAGE_OPTIONS="${NATIVE_IMAGE_OPTIONS} -H:IncludeResources=${INCLUDE_RES}
 
 # This should be "set in stone" - this is to prevent compilation errors due to incomplete classpath for optional features of
 # Netty.
-DELAY_INIT="io.netty.handler.codec.http.HttpObjectEncoder"
-DELAY_INIT="${DELAY_INIT},io.netty.buffer.Unpooled"
-DELAY_INIT="${DELAY_INIT},io.netty.buffer.UnpooledByteBufAllocator"
-DELAY_INIT="${DELAY_INIT},io.netty.buffer.AbstractByteBuf"
-DELAY_INIT="${DELAY_INIT},io.netty.handler.ssl.SslHandler"
-DELAY_INIT="${DELAY_INIT},io.netty.handler.ssl.ReferenceCountedOpenSslEngine"
-DELAY_INIT="${DELAY_INIT},io.netty.handler.codec.MessageAggregator"
-DELAY_INIT="${DELAY_INIT},io.netty.handler.codec.http.DefaultFullHttpResponse"
-DELAY_INIT="${DELAY_INIT},io.netty.handler.codec.http.HttpObjectDecoder"
-DELAY_INIT="${DELAY_INIT},io.netty.handler.codec.http2.DefaultHttp2FrameWriter"
-DELAY_INIT="${DELAY_INIT},io.netty.handler.codec.http2.CleartextHttp2ServerUpgradeHandler"
-DELAY_INIT="${DELAY_INIT},io.netty.handler.codec.http2.DefaultHttp2HeadersEncoder"
-DELAY_INIT="${DELAY_INIT},io.netty.handler.codec.http2.Http2CodecUtil"
+DELAY_INIT='io.netty.buffer.UnpooledByteBufAllocator$InstrumentedUnpooledUnsafeNoCleanerDirectByteBuf'
+DELAY_INIT="${DELAY_INIT},io.netty.buffer.UnreleasableByteBuf"
 DELAY_INIT="${DELAY_INIT},io.netty.handler.codec.http2.Http2ConnectionHandler"
+DELAY_INIT="${DELAY_INIT},io.netty.handler.codec.http2.Http2CodecUtil"
+DELAY_INIT="${DELAY_INIT},io.netty.handler.codec.http.HttpObjectEncoder"
+DELAY_INIT="${DELAY_INIT},io.netty.handler.codec.http2.CleartextHttp2ServerUpgradeHandler"
+DELAY_INIT="${DELAY_INIT},io.netty.handler.codec.http2.DefaultHttp2FrameWriter"
+DELAY_INIT="${DELAY_INIT},io.netty.handler.codec.http2.Http2ServerUpgradeCodec"
+
 
 NATIVE_IMAGE_OPTIONS="${NATIVE_IMAGE_OPTIONS} --delay-class-initialization-to-runtime=${DELAY_INIT}"
 
