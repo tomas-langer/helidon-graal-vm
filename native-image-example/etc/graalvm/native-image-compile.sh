@@ -16,17 +16,17 @@
 #
 
 # run this script from project directory
-source ./etc/graal/env.sh
+source ./etc/graalvm/env.sh
 
 # Configuration of reflection, needed for custom classes that should be instantiated or access by reflection
-#GRAAL_OPTIONS="-H:ReflectionConfigurationResources=/Users/tomas/dev/helidon/helidon/examples/helidon-graal-vm/etc/graal/reflection-config.json"
-GRAAL_OPTIONS=""
+#NATIVE_IMAGE_OPTIONS="-H:ReflectionConfigurationResources=/Users/tomas/dev/helidon/helidon/examples/helidon-graal-vm/etc/graal/reflection-config.json"
+NATIVE_IMAGE_OPTIONS=""
 
 # Configure all resources that should be available in runtime (except for META-INF/services - those are added
 # by Helidon SVM Extension)
 INCLUDE_RES="application.yaml"
 INCLUDE_RES="${INCLUDE_RES}|logging.properties"
-GRAAL_OPTIONS="${GRAAL_OPTIONS} -H:IncludeResources=${INCLUDE_RES}"
+NATIVE_IMAGE_OPTIONS="${NATIVE_IMAGE_OPTIONS} -H:IncludeResources=${INCLUDE_RES}"
 
 # This should be "set in stone" - this is to prevent compilation errors due to incomplete classpath for optional features of
 # Netty.
@@ -45,14 +45,13 @@ DELAY_INIT="${DELAY_INIT},io.netty.handler.codec.http2.DefaultHttp2HeadersEncode
 DELAY_INIT="${DELAY_INIT},io.netty.handler.codec.http2.Http2CodecUtil"
 DELAY_INIT="${DELAY_INIT},io.netty.handler.codec.http2.Http2ConnectionHandler"
 
-GRAAL_OPTIONS="${GRAAL_OPTIONS} --delay-class-initialization-to-runtime=${DELAY_INIT}"
+NATIVE_IMAGE_OPTIONS="${NATIVE_IMAGE_OPTIONS} --delay-class-initialization-to-runtime=${DELAY_INIT}"
 
 # And this is to prevent compilation errors that are caused by some specific Netty classes (io/netty/internal/tcnative/SSL)
-GRAAL_OPTIONS="${GRAAL_OPTIONS} --report-unsupported-elements-at-runtime"
+NATIVE_IMAGE_OPTIONS="${NATIVE_IMAGE_OPTIONS} --report-unsupported-elements-at-runtime"
 
-GRAAL_OPTIONS="${GRAAL_OPTIONS} --allow-incomplete-classpath"
+NATIVE_IMAGE_OPTIONS="${NATIVE_IMAGE_OPTIONS} --allow-incomplete-classpath"
 
-echo "Graal options: ${GRAAL_OPTIONS}"
+echo "GraalVM native image options: ${NATIVE_IMAGE_OPTIONS}"
 
-${GRAAL_HOME}/bin/native-image -jar target/helidon-examples-graal-full.jar ${GRAAL_OPTIONS}
-
+${GRAALVM_HOME}/bin/native-image -jar target/helidon-examples-graalvm-native-image-full.jar ${NATIVE_IMAGE_OPTIONS}

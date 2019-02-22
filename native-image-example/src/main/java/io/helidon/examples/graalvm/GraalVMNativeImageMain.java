@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.helidon.examples.graal;
+package io.helidon.examples.graalvm;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -32,33 +32,33 @@ import io.helidon.webserver.ServerResponse;
 import io.helidon.webserver.WebServer;
 
 /**
- * Runnable class for Graal integration example.
+ * Runnable class for GraalVM native image integration example.
  * <p>
  * Steps:
  * <ol>
  * <li>Follow "Setting up the development environment" guide from: https://github.com/cstancu/netty-native-demo</li>
- * <li>Update GRAAL_HOME with your installation directory in {@code./etc/graal/env.sh}</li>
- * <li>Invoke command: {@code source ./etc/graal/env.sh}</li>
+ * <li>Update GRAALVM_HOME with your installation directory in {@code./etc/graal/env.sh}</li>
+ * <li>Invoke command: {@code source ./etc/graalvm/env.sh}</li>
  * <li>Install the library into local repository: {@code  mvn install:install-file -Dfile=${JAVA_HOME}/jre/lib/svm/builder/svm
- * .jar -DgroupId=com.oracle.substratevm -DartifactId=svm -Dversion=GraalVM-1.0.0-rc6 -Dpackaging=jar}</li>
+ * .jar -DgroupId=com.oracle.substratevm -DartifactId=svm -Dversion=GraalVM-1.0.0-rc12 -Dpackaging=jar}</li>
  * <li>Build the project: {@code mvn clean package}</li>
  * <li>Build the native image: {@code ./etc/graal/svm-compile.sh}</li>
  * <li>Run the application: {@code ./helidon-graal-vm-full}</li>
  * </ol>
  */
-public final class GraalMain {
+public final class GraalVMNativeImageMain {
     private static long timestamp;
 
     static {
         try {
-            LogManager.getLogManager().readConfiguration(GraalMain.class.getResourceAsStream("/logging.properties"));
+            LogManager.getLogManager().readConfiguration(GraalVMNativeImageMain.class.getResourceAsStream("/logging.properties"));
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     // private constructor
-    private GraalMain() {
+    private GraalVMNativeImageMain() {
     }
 
     /**
@@ -77,8 +77,8 @@ public final class GraalMain {
 
         WebServer.create(ServerConfiguration.create(config.get("server")), routing(config))
                 .start()
-                .thenAccept(GraalMain::webServerStarted)
-                .exceptionally(GraalMain::webServerFailed);
+                .thenAccept(GraalVMNativeImageMain::webServerStarted)
+                .exceptionally(GraalVMNativeImageMain::webServerFailed);
     }
 
     private static void debugLogger(Logger logger) {
@@ -119,7 +119,7 @@ public final class GraalMain {
                 .get("/", (req, res) -> res.send(message))
                 .get("/hello", (req, res) -> res.send("Hello World"))
                 .register("/json", JsonSupport.create())
-                .get("/json", GraalMain::jsonResponse)
+                .get("/json", GraalVMNativeImageMain::jsonResponse)
                 .build();
     }
 

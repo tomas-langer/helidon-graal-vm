@@ -26,7 +26,7 @@ import com.oracle.svm.core.annotate.Substitute;
 import com.oracle.svm.core.annotate.TargetClass;
 
 /**
- * Graal VM substitutions for Config.
+ * Graal VM native image substitutions for Config.
  */
 public final class ConfigSubstitutions {
     @TargetClass(className = "io.helidon.config.spi.PollingStrategyConfigMapper")
