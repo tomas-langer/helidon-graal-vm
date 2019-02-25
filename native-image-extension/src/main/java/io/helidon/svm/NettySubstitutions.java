@@ -23,7 +23,7 @@ import io.netty.util.internal.logging.InternalLoggerFactory;
 import io.netty.util.internal.logging.JdkLoggerFactory;
 
 /**
- * Substitutions for Graal Substrate VM.
+ * Substitutions for GraalVM native image generation.
  */
 public final class NettySubstitutions {
     @TargetClass(className = "io.netty.util.internal.PlatformDependent0")

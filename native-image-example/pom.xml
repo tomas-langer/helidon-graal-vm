@@ -3,14 +3,14 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>helidon-graal-project</artifactId>
+        <artifactId>helidon-graalvm-native-image-project</artifactId>
         <groupId>io.helidon.examples</groupId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>helidon-examples-graal</artifactId>
-    <name>Helidon Substrate VM Example</name>
+    <artifactId>helidon-examples-graalvm-native-image</artifactId>
+    <name>Helidon GraalVM native image example</name>
 
     <dependencies>
         <dependency>
@@ -27,7 +27,7 @@
         </dependency>
         <dependency>
             <groupId>io.helidon.examples</groupId>
-            <artifactId>helidon-svm-extension</artifactId>
+            <artifactId>helidon-native-image-extension</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>
@@ -47,7 +47,7 @@
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>io.helidon.examples.graal.GraalMain</mainClass>
+                                    <mainClass>io.helidon.examples.graalvm.GraalVMNativeImageMain</mainClass>
                                 </transformer>
                             </transformers>
                         </configuration>
