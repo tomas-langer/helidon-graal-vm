@@ -15,6 +15,7 @@
  */
 package io.helidon.svm;
 
+import java.nio.file.Path;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -36,6 +37,13 @@ public final class ConfigSubstitutions {
                                                                             Config properties,
                                                                             Class<T> targetType) {
             return Optional.empty();
+        }
+    }
+    @TargetClass(className = "io.helidon.config.internal.ClasspathSourceHelper")
+    static final class ClasspathSourceHelperExtensionc {
+        @Substitute
+        static Path resourcePath(String resourceName) {
+            return null;
         }
     }
 }

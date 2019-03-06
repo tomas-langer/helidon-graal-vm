@@ -69,7 +69,7 @@ public final class GraalVMNativeImageMain {
      */
     public static void main(String[] args) throws IOException {
         // this property is not available in Graal SVM, and is not mandatory, yet YAML parser fails if it not present
-        //System.setProperty("java.runtime.name", "Graal SubstrateVM");
+        System.setProperty("java.runtime.name", "Graal SubstrateVM");
 
         timestamp = System.currentTimeMillis();
 
