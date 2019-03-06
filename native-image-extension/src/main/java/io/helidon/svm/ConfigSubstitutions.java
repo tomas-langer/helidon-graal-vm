@@ -40,7 +40,7 @@ public final class ConfigSubstitutions {
         }
     }
     @TargetClass(className = "io.helidon.config.internal.ClasspathSourceHelper")
-    static final class ClasspathSourceHelperExtensionc {
+    static final class ClasspathSourceHelperExtension {
         @Substitute
         static Path resourcePath(String resourceName) {
             return null;
