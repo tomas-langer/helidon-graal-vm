@@ -19,3 +19,23 @@ server:
 
 my-app:
   message: "Hello from YAML configuration"
+
+security:
+  providers:
+    - abac:
+    - http-basic-auth:
+        users:
+          - login: "jack"
+            password: "jackIsGreat"
+            roles: ["admin"]
+          - login: "jill"
+            password: "jillToo"
+            roles: ["user"]
+  web-server:
+    paths:
+      - path: "/hello"
+        authenticate: true
+        roles-allowed: ["admin"]
+      - path: "/json"
+        authenticate: true
+        roles-allowed: ["user", "admin"]

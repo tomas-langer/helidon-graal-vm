@@ -24,12 +24,25 @@ import javax.json.Json;
 import javax.json.JsonObject;
 
 import io.helidon.config.Config;
+import io.helidon.health.HealthSupport;
+import io.helidon.media.jsonb.server.JsonBindingSupport;
 import io.helidon.media.jsonp.server.JsonSupport;
+import io.helidon.metrics.MetricsSupport;
+import io.helidon.metrics.RegistryFactory;
+import io.helidon.security.Security;
+import io.helidon.security.integration.webserver.WebSecurity;
+import io.helidon.tracing.TracerBuilder;
+import io.helidon.webserver.Handler;
 import io.helidon.webserver.Routing;
 import io.helidon.webserver.ServerConfiguration;
 import io.helidon.webserver.ServerRequest;
 import io.helidon.webserver.ServerResponse;
 import io.helidon.webserver.WebServer;
+
+import org.eclipse.microprofile.health.HealthCheck;
+import org.eclipse.microprofile.health.HealthCheckResponse;
+import org.eclipse.microprofile.metrics.Counter;
+import org.eclipse.microprofile.metrics.MetricRegistry;
 
 /**
  * Runnable class for GraalVM native image integration example.
@@ -74,8 +87,14 @@ public final class GraalVMNativeImageMain {
         timestamp = System.currentTimeMillis();
 
         Config config = Config.create();
+        ServerConfiguration serverConfig = ServerConfiguration.builder(config.get("server"))
+                /*
+                 Tracing registration
+                 */
+                .tracer(TracerBuilder.create("graal-example").buildAndRegister())
+                .build();
 
-        WebServer.create(ServerConfiguration.create(config.get("server")), routing(config))
+        WebServer.create(serverConfig, routing(config))
                 .start()
                 .thenAccept(GraalVMNativeImageMain::webServerStarted)
                 .exceptionally(GraalVMNativeImageMain::webServerFailed);
@@ -113,14 +132,69 @@ public final class GraalVMNativeImageMain {
     }
 
     private static Routing routing(Config config) {
+        /*
+         * Config
+         */
         String message = config.get("my-app.message").asString().orElse("Default message");
 
+        /*
+         * Metrics
+         */
+        // there is an ordering requirement for metric support in v 1.0.0 - to be fixed in later versions
+        MetricsSupport metrics = MetricsSupport.create(config.get("metrics"));
+        MetricRegistry registry = RegistryFactory.getRegistryFactory().get().getRegistry(MetricRegistry.Type.APPLICATION);
+        Counter counter = registry.counter("counter");
+
+        /*
+         * Health
+         */
+        HealthSupport health = HealthSupport.builder()
+                .config(config.get("health"))
+                .add((HealthCheck) () -> HealthCheckResponse.builder()
+                        .name("test")
+                        .up()
+                        .withData("time", System.currentTimeMillis())
+                        .build())
+                .build();
+
+        /*
+         * Security
+         */
+        Config securityConfig = config.get("security");
+        Security security = Security.create(securityConfig);
+        WebSecurity webSecurity = WebSecurity.create(security, securityConfig);
+
         return Routing.builder()
+                // register /metrics endpoint that serves metric information
+                .register(metrics)
+                // register security restrictions for our routing
+                .register(webSecurity)
+                // register /health endpoint that serves health cheks
+                .register(health)
                 .get("/", (req, res) -> res.send(message))
-                .get("/hello", (req, res) -> res.send("Hello World"))
+                .get("/hello", (req, res) -> {
+                    res.send("Hello World");
+                    counter.inc();
+                })
                 .register("/json", JsonSupport.create())
                 .get("/json", GraalVMNativeImageMain::jsonResponse)
+                .put("/json", Handler.create(JsonObject.class, GraalVMNativeImageMain::jsonRequest))
+                .register("/jsonb", JsonBindingSupport.create())
+                .get("/jsonb", GraalVMNativeImageMain::jsonbResponse)
+                .put("/jsonb", Handler.create(JsonBHello.class, GraalVMNativeImageMain::jsonbRequest))
                 .build();
+    }
+
+    private static void jsonbRequest(ServerRequest request, ServerResponse serverResponse, JsonBHello hello) {
+        serverResponse.send(hello);
+    }
+
+    private static void jsonRequest(ServerRequest request, ServerResponse serverResponse, JsonObject jsonObject) {
+        serverResponse.send(jsonObject);
+    }
+
+    private static void jsonbResponse(ServerRequest req, ServerResponse res) {
+        res.send(new JsonBHello(req.queryParams().first("param").orElse("default")));
     }
 
     private static void jsonResponse(ServerRequest req, ServerResponse res) {

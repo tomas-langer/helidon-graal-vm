@@ -15,7 +15,6 @@
  */
 package io.helidon.svm;
 
-import java.util.List;
 import java.util.Map;
 
 import com.oracle.svm.core.annotate.AutomaticFeature;
@@ -31,6 +30,7 @@ import org.graalvm.nativeimage.RuntimeReflection;
 public class HelidonSvmFeature implements Feature {
     @Override
     public void beforeAnalysis(BeforeAnalysisAccess access) {
+        /*
         FeatureImpl.BeforeAnalysisAccessImpl impl = (FeatureImpl.BeforeAnalysisAccessImpl) access;
         List<Class<?>> allClasses = impl.findSubclasses(Object.class);
         for (Class<?> clazz : allClasses) {
@@ -38,6 +38,8 @@ public class HelidonSvmFeature implements Feature {
             // if annotated by known (Authenticated, RolesAllowed etc.)
             clazz.getDeclaredAnnotations();
         }
+        */
+
         // logging
         // this should work eventually out of the box
         // need to initialize Logging in static class initializer
