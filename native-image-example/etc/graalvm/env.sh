@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 
-# GRAALVM_HOME=/Users/tomas/graal/graalvm-ce-1.0.0-rc12/Contents/Home
-# JAVA_HOME=${GRAALVM_HOME}
-#
-# export PATH=$JAVA_HOME/bin:${PATH}
+GRAALVM_HOME=/Users/tomas/graal/graalvm-ce-1.0.0-rc12/Contents/Home
+JAVA_HOME=${GRAALVM_HOME}
+
+export PATH=$JAVA_HOME/bin:${PATH}
