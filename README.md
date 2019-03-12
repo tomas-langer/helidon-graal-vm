@@ -3,35 +3,28 @@ Helidon Graal Native Image POC
 
 # Prepare environment
 
-1. Update `native-image-example/etc/graalvm/env.sh`
-    1. Make sure `GRAALVM_HOME` points to a valid installation
-
+1. Install Graal VM - download a release from https://github.com/oracle/graal/releases or from https://www.graalvm.org/downloads/
+2. Update the `pom.xml` - configure `native.image` property to point to the `native-image` executable
+3. Update the `pom.xml` - configure `version.graalvm` property to the version downloaded
+    _Helidon has its own integration module for Graal VM `helidon-graal-native-image-extension` 
+        make sure the versions of Graal VM are compatible_
+        
 # Build
-
-1. Run `mvn clean install` from project root
-2. Go to `native-image-example` directory
-    1. Invoke `./etc/graalvm/native-image-compile.sh`
-
-# Modify
-
-If the extension is modified, go through all steps in Build chapter.
-If the example or script is modified, go to the `native-image-example` directory and invoke
-
-```bash
-mvn clean package
-./etc/graalvm/native-image-compile.sh
-```
-
+1. Run `mvn clean install` to build the application to a java jar
+2. Run `mvn exec:exec@build-native-image` to build the native image
+    1. See `native.image`, `native.name`, `native.resources` and `main.class` configuration in `pom.xml`
+    2. See `exec` plugin configuration execution with id `build-native-image` for details about invoking the `native-image` build
+    
+   
 # Run
 
-From the `native-image-example` directory.
+You can run both the java and the native image from maven:
 
-Once all steps are successful, you can run the image:
-`./helidon-examples-graalvm-native-image-full`
+- `mvn exec:exec` to run the java library
+- `mvn exec:exec@run-native-image` to run the native image
 
-Compare output with the java version:
-`java -jar ./target/helidon-examples-graalvm-native-image-full.jar`
-
+The native image can also be executed from command line (if the `native.name` property is unchanged):
+`./target/helidon-example-native-image`
 
 ## Endpoints
 
@@ -53,3 +46,9 @@ JSON-B:
 
 JSON-P:
 `curl -i -u jack:jackIsGreat -X PUT -d '{"time":49, "key":"aValue", "parameter":"theParam"}' http://localhost:8099/json`
+
+
+# Next steps
+
+1. Add support to build the native image in a docker (to produce Linux native image)
+2. Add support to build a docker image with the native image built in step 1

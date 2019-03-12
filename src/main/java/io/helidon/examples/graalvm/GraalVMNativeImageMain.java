@@ -25,6 +25,7 @@ import javax.json.JsonObject;
 
 import io.helidon.config.Config;
 import io.helidon.health.HealthSupport;
+import io.helidon.health.checks.HealthChecks;
 import io.helidon.media.jsonb.server.JsonBindingSupport;
 import io.helidon.media.jsonp.server.JsonSupport;
 import io.helidon.metrics.MetricsSupport;
@@ -50,13 +51,8 @@ import org.eclipse.microprofile.metrics.MetricRegistry;
  * Steps:
  * <ol>
  * <li>Follow "Setting up the development environment" guide from: https://github.com/cstancu/netty-native-demo</li>
- * <li>Update GRAALVM_HOME with your installation directory in {@code./etc/graal/env.sh}</li>
- * <li>Invoke command: {@code source ./etc/graalvm/env.sh}</li>
- * <li>Install the library into local repository: {@code  mvn install:install-file -Dfile=${JAVA_HOME}/jre/lib/svm/builder/svm
- * .jar -DgroupId=com.oracle.substratevm -DartifactId=svm -Dversion=GraalVM-1.0.0-rc12 -Dpackaging=jar}</li>
- * <li>Build the project: {@code mvn clean package}</li>
- * <li>Build the native image: {@code ./etc/graal/svm-compile.sh}</li>
- * <li>Run the application: {@code ./helidon-graal-vm-full}</li>
+ * <li>Configure the {@code native.image} property in pom.xml of the example</li>
+ * <li>Run {@code mvn clean package exec:exec} in the example directory</li>
  * </ol>
  */
 public final class GraalVMNativeImageMain {
@@ -125,6 +121,8 @@ public final class GraalVMNativeImageMain {
     }
 
     private static void webServerStarted(WebServer webServer) {
+        //System.exit(0);
+
         long time = System.currentTimeMillis() - timestamp;
         System.out.println("Application started in " + time + " milliseconds");
         System.out.println("Application is available at:");
@@ -155,6 +153,7 @@ public final class GraalVMNativeImageMain {
                         .up()
                         .withData("time", System.currentTimeMillis())
                         .build())
+                .add(HealthChecks.heapMemoryCheck())
                 .build();
 
         /*
