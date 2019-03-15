@@ -3,37 +3,52 @@ Helidon Graal Native Image POC
 
 # Prepare environment
 
-1. Update `native-image-example/etc/graalvm/env.sh`
-    1. Make sure `GRAALVM_HOME` points to a valid installation
+General prerequisites:
 
-# Build
+1. Maven
+2. Java 8
+3. Docker 
 
-1. Run `mvn clean install` from project root
-2. Go to `native-image-example` directory
-    1. Invoke `./etc/graalvm/native-image-compile.sh`
+To build the local native image:
 
-# Modify
+1. Install Graal VM - download a release from https://github.com/oracle/graal/releases or from https://www.graalvm.org/downloads/
+2. Update the `pom.xml` - configure `native.image` property to point to the `native-image` executable
+3. Update the `pom.xml` - configure `version.graalvm` property to the version downloaded
 
-If the extension is modified, go through all steps in Build chapter.
-If the example or script is modified, go to the `native-image-example` directory and invoke
+    _Helidon has its own integration module for Graal VM `helidon-graal-native-image-extension` 
+        make sure the versions of Graal VM are compatible_
 
-```bash
-mvn clean package
-./etc/graalvm/native-image-compile.sh
-```
+# Build the application
+        
+## Java jar
+Run `mvn clean package` to build the application to a java jar.
 
-# Run
+Run `mvn exec:exec` to run the jar built in previous step
 
-From the `native-image-example` directory.
+## Local native image
+Local native image can be built on Linux and MacOs environments.
 
-Once all steps are successful, you can run the image:
-`./helidon-examples-graalvm-native-image-full`
+Run `mvn exec:exec@build-native-image` to build the native image
 
-Compare output with the java version:
-`java -jar ./target/helidon-examples-graalvm-native-image-full.jar`
+See `native.image`, `native.name`, `native.resources` and `main.class` configuration in `pom.xml`
 
+See `exec` plugin configuration execution with id `build-native-image` for details about invoking the `native-image` build
 
-## Endpoints
+Run `mvn exec:exec@run-native-image` to run the native image
+
+The native image can also be executed from command line (if the `native.name` property is unchanged):
+`./target/helidon-example-native-image`
+
+## Linux native image in Docker
+
+Run `mvn clean package -P native-image-docker` to build a Linux docker image.
+
+Run `docker run -d --name helidon-native -p 8099:8099 helidon/example-graal:1.0.0-SNAPSHOT` to run the Docker container based on the image
+
+See configuration of docker plugin in profile `native-image-docker` in `pom.xml`
+  
+   
+# Endpoints
 
 | Endpoint | Expected Output | Description
 | :-------- |---- | --- |

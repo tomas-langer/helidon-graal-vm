@@ -11,7 +11,7 @@ public class JsonBHello {
     private long time = System.currentTimeMillis();
     private String key = "value";
 
-    JsonBHello(String parameterValue) {
+    public JsonBHello(String parameterValue) {
         this.parameterValue = parameterValue;
     }
 
