@@ -24,6 +24,8 @@ import javax.json.Json;
 import javax.json.JsonObject;
 
 import io.helidon.config.Config;
+import io.helidon.config.ConfigSources;
+import io.helidon.config.spi.ConfigSource;
 import io.helidon.health.HealthSupport;
 import io.helidon.health.checks.HealthChecks;
 import io.helidon.media.jsonb.server.JsonBindingSupport;
@@ -82,12 +84,13 @@ public final class GraalVMNativeImageMain {
 
         timestamp = System.currentTimeMillis();
 
-        Config config = Config.create();
+        Config config = createConfig();
+
         ServerConfiguration serverConfig = ServerConfiguration.builder(config.get("server"))
                 /*
                  Tracing registration
                  */
-                .tracer(TracerBuilder.create("graal-example").buildAndRegister())
+                .tracer(TracerBuilder.create(config.get("tracing")).buildAndRegister())
                 .build();
 
         WebServer.create(serverConfig, routing(config))
@@ -96,22 +99,11 @@ public final class GraalVMNativeImageMain {
                 .exceptionally(GraalVMNativeImageMain::webServerFailed);
     }
 
-    private static void debugLogger(Logger logger) {
-        if (null == logger) {
-            System.out.println("Logger to debug is null!");
-            return;
-        }
-        Logger previous = logger;
-        Logger parent = logger.getParent();
-
-        while (parent != null) {
-            previous = parent;
-            parent = previous.getParent();
-        }
-
-        System.out.println("Root logger: " + previous.getName());
-        System.out.println("Level: " + previous.getLevel());
-        System.out.println("Handlers: " + Arrays.toString(previous.getHandlers()));
+    private static Config createConfig() {
+        return Config.create(
+                ConfigSources.file("conf/dev-application.yaml").optional(),
+                ConfigSources.classpath("application.yaml")
+        );
     }
 
     private static Void webServerFailed(Throwable throwable) {

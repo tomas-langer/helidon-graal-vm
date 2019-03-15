@@ -15,10 +15,15 @@
 #
 
 server:
-  port: 8099
+  # this resource is filtered by maven and the port is defined in pom.xml
+  port: ${main.port}
 
 my-app:
   message: "Hello from YAML configuration"
+
+tracing:
+  service: "graal-example"
+  host: "zipkin"
 
 security:
   providers:
