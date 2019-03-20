@@ -16,16 +16,13 @@
 package io.helidon.examples.graalvm;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.logging.LogManager;
-import java.util.logging.Logger;
 
 import javax.json.Json;
 import javax.json.JsonObject;
 
 import io.helidon.config.Config;
 import io.helidon.config.ConfigSources;
-import io.helidon.config.spi.ConfigSource;
 import io.helidon.health.HealthSupport;
 import io.helidon.health.checks.HealthChecks;
 import io.helidon.media.jsonb.server.JsonBindingSupport;
@@ -125,14 +122,16 @@ public final class GraalVMNativeImageMain {
         /*
          * Config
          */
-        String message = config.get("my-app.message").asString().orElse("Default message");
+        String message = config.get("my-app.message")
+                .asString()
+                .orElse("Default message");
 
         /*
          * Metrics
          */
         // there is an ordering requirement for metric support in v 1.0.0 - to be fixed in later versions
         MetricsSupport metrics = MetricsSupport.create(config.get("metrics"));
-        MetricRegistry registry = RegistryFactory.getRegistryFactory().get().getRegistry(MetricRegistry.Type.APPLICATION);
+        MetricRegistry registry = RegistryFactory.getInstance().getRegistry(MetricRegistry.Type.APPLICATION);
         Counter counter = registry.counter("counter");
 
         /*
@@ -160,34 +159,53 @@ public final class GraalVMNativeImageMain {
                 .register(metrics)
                 // register security restrictions for our routing
                 .register(webSecurity)
-                // register /health endpoint that serves health cheks
+                // register /health endpoint that serves health checks
                 .register(health)
+                // simple routing
                 .get("/", (req, res) -> res.send(message))
+                // secured routing with metric
                 .get("/hello", (req, res) -> {
                     res.send("Hello World");
                     counter.inc();
                 })
+                /*
+                 * JSON-P
+                 */
+                // register JSON-P support
                 .register("/json", JsonSupport.create())
+                // JSON-P endpoint
                 .get("/json", GraalVMNativeImageMain::jsonResponse)
+                // JSON-P echo endpoint
                 .put("/json", Handler.create(JsonObject.class, GraalVMNativeImageMain::jsonRequest))
+                /*
+                 * JSON-B
+                 */
+                // register JSON-B support
                 .register("/jsonb", JsonBindingSupport.create())
+                // JSON-B endpoint
                 .get("/jsonb", GraalVMNativeImageMain::jsonbResponse)
+                // JSON-B echo endpoint
                 .put("/jsonb", Handler.create(JsonBHello.class, GraalVMNativeImageMain::jsonbRequest))
+                // and now build the routing
                 .build();
     }
 
+    // JSON-B echo endpoint
     private static void jsonbRequest(ServerRequest request, ServerResponse serverResponse, JsonBHello hello) {
         serverResponse.send(hello);
     }
 
+    // JSON-P echo endpoint
     private static void jsonRequest(ServerRequest request, ServerResponse serverResponse, JsonObject jsonObject) {
         serverResponse.send(jsonObject);
     }
 
+    // JSON-B endpoint
     private static void jsonbResponse(ServerRequest req, ServerResponse res) {
         res.send(new JsonBHello(req.queryParams().first("param").orElse("default")));
     }
 
+    // JSON-P endpoint
     private static void jsonResponse(ServerRequest req, ServerResponse res) {
         String param = req.queryParams().first("param").orElse("default");
 
