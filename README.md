@@ -43,7 +43,7 @@ The native image can also be executed from command line (if the `native.name` pr
 
 Run `mvn clean package -P native-image-docker` to build a Linux docker image.
 
-Run `docker run -d --name helidon-native -p 8099:8099 helidon/example-graal:1.0.0-SNAPSHOT` to run the Docker container based on the image
+Run `docker run --name helidon-native -p 8099:8099 helidon/example-graal:1.0.0-SNAPSHOT` to run the Docker container based on the image
 
 See configuration of docker plugin in profile `native-image-docker` in `pom.xml`
   
