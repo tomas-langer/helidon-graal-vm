@@ -16,6 +16,7 @@
         <version.plugin.dockerfile>1.4.10</version.plugin.dockerfile>
         <copied.libs.dir>${project.build.directory}/dependency</copied.libs.dir>
 
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>${maven.compiler.source}</maven.compiler.target>
 

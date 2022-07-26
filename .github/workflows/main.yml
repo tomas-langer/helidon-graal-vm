@@ -21,10 +21,6 @@ jobs:
           java-version: "11"
           components: "native-image"
           github-token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Run a one-line script
+      - name: Build native image
         run: |
-          echo "GRAALVM_HOME: $GRAALVM_HOME"
-          echo "JAVA_HOME: $JAVA_HOME"
-          java --version
-          native-image --version
           mvn package -B -Pnative-image
