@@ -15,31 +15,27 @@
  */
 package io.helidon.examples.graalvm;
 
-import java.io.IOException;
-import java.util.logging.LogManager;
-
 import javax.json.Json;
 import javax.json.JsonObject;
 
+import io.helidon.common.LogConfig;
 import io.helidon.config.Config;
 import io.helidon.config.ConfigSources;
 import io.helidon.health.HealthSupport;
 import io.helidon.health.checks.HealthChecks;
-import io.helidon.media.jsonb.server.JsonBindingSupport;
-import io.helidon.media.jsonp.server.JsonSupport;
+import io.helidon.media.jsonb.JsonbSupport;
+import io.helidon.media.jsonp.JsonpSupport;
 import io.helidon.metrics.MetricsSupport;
-import io.helidon.metrics.RegistryFactory;
+import io.helidon.metrics.api.RegistryFactory;
 import io.helidon.security.Security;
 import io.helidon.security.integration.webserver.WebSecurity;
 import io.helidon.tracing.TracerBuilder;
 import io.helidon.webserver.Handler;
 import io.helidon.webserver.Routing;
-import io.helidon.webserver.ServerConfiguration;
 import io.helidon.webserver.ServerRequest;
 import io.helidon.webserver.ServerResponse;
 import io.helidon.webserver.WebServer;
 
-import org.eclipse.microprofile.health.HealthCheck;
 import org.eclipse.microprofile.health.HealthCheckResponse;
 import org.eclipse.microprofile.metrics.Counter;
 import org.eclipse.microprofile.metrics.MetricRegistry;
@@ -49,22 +45,12 @@ import org.eclipse.microprofile.metrics.MetricRegistry;
  * <p>
  * Steps:
  * <ol>
- * <li>Follow "Setting up the development environment" guide from: https://github.com/cstancu/netty-native-demo</li>
- * <li>Configure the {@code native.image} property in pom.xml of the example</li>
- * <li>Run {@code mvn clean package exec:exec} in the example directory</li>
+ * <li>Install GraalVM 21 for Java 11 with native-image</li>
+ * <li>Set the {@code GRAALVM_HOME} environment variable to point to your installation</li>
+ * <li>Run {@code mvn clean package -Pnative-image} in the example directory</li>
  * </ol>
  */
 public final class GraalVMNativeImageMain {
-    private static long timestamp;
-
-    static {
-        try {
-            LogManager.getLogManager().readConfiguration(GraalVMNativeImageMain.class.getResourceAsStream("/logging.properties"));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
     // private constructor
     private GraalVMNativeImageMain() {
     }
@@ -73,27 +59,28 @@ public final class GraalVMNativeImageMain {
      * Start this example.
      *
      * @param args not used
-     * @throws java.io.IOException if we fail to read logging configuration
      */
-    public static void main(String[] args) throws IOException {
-        // this property is not available in Graal SVM, and is not mandatory, yet YAML parser fails if it not present
-        System.setProperty("java.runtime.name", "Graal SubstrateVM");
+    public static void main(String[] args) {
+        long timestamp = System.currentTimeMillis();
 
-        timestamp = System.currentTimeMillis();
+        LogConfig.configureRuntime();
 
         Config config = createConfig();
 
-        ServerConfiguration serverConfig = ServerConfiguration.builder(config.get("server"))
-                /*
-                 Tracing registration
-                 */
-                .tracer(TracerBuilder.create(config.get("tracing")).buildAndRegister())
-                .build();
-
-        WebServer.create(serverConfig, routing(config))
+        WebServer server = WebServer.builder()
+                .config(config.get("server"))
+                .tracer(TracerBuilder.create(config.get("tracing")).registerGlobal(true).build())
+                .routing(routing(config))
+                .addMediaSupport(JsonpSupport.create())
+                .addMediaSupport(JsonbSupport.create())
+                .build()
                 .start()
-                .thenAccept(GraalVMNativeImageMain::webServerStarted)
-                .exceptionally(GraalVMNativeImageMain::webServerFailed);
+                .await();
+
+        long time = System.currentTimeMillis() - timestamp;
+        System.out.println("Application started in " + time + " milliseconds");
+        System.out.println("Application is available at:");
+        System.out.println("http://localhost:" + server.port() + "/");
     }
 
     private static Config createConfig() {
@@ -101,21 +88,6 @@ public final class GraalVMNativeImageMain {
                 ConfigSources.file("conf/dev-application.yaml").optional(),
                 ConfigSources.classpath("application.yaml")
         );
-    }
-
-    private static Void webServerFailed(Throwable throwable) {
-        System.err.println("Failed to start webserver");
-        throwable.printStackTrace();
-        return null;
-    }
-
-    private static void webServerStarted(WebServer webServer) {
-        //System.exit(0);
-
-        long time = System.currentTimeMillis() - timestamp;
-        System.out.println("Application started in " + time + " milliseconds");
-        System.out.println("Application is available at:");
-        System.out.println("http://localhost:" + webServer.port() + "/");
     }
 
     private static Routing routing(Config config) {
@@ -139,12 +111,12 @@ public final class GraalVMNativeImageMain {
          */
         HealthSupport health = HealthSupport.builder()
                 .config(config.get("health"))
-                .add((HealthCheck) () -> HealthCheckResponse.builder()
+                .addLiveness(() -> HealthCheckResponse.builder()
                         .name("test")
                         .up()
                         .withData("time", System.currentTimeMillis())
                         .build())
-                .add(HealthChecks.heapMemoryCheck())
+                .addLiveness(HealthChecks.heapMemoryCheck())
                 .build();
 
         /*
@@ -171,8 +143,6 @@ public final class GraalVMNativeImageMain {
                 /*
                  * JSON-P
                  */
-                // register JSON-P support
-                .register("/json", JsonSupport.create())
                 // JSON-P endpoint
                 .get("/json", GraalVMNativeImageMain::jsonResponse)
                 // JSON-P echo endpoint
@@ -180,8 +150,6 @@ public final class GraalVMNativeImageMain {
                 /*
                  * JSON-B
                  */
-                // register JSON-B support
-                .register("/jsonb", JsonBindingSupport.create())
                 // JSON-B endpoint
                 .get("/jsonb", GraalVMNativeImageMain::jsonbResponse)
                 // JSON-B echo endpoint

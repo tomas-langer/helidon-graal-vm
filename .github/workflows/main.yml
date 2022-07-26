@@ -1,0 +1,26 @@
+name: "Validate PR"
+
+# Controls when the workflow will run
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: graalvm/setup-graalvm@v1
+        with:
+          version: "22.1.0"
+          java-version: "11"
+          components: "native-image"
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build native image
+        run: |
+          mvn package -B -Pnative-image
